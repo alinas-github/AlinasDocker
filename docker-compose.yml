@@ -1,0 +1,39 @@
+version: "2"
+
+services:
+  matomo:
+    container_name: some-matomo
+    image: matomo:latest
+    ports:
+      - 8080:80
+    environment:
+      - MATOMO_DATABASE_HOST=mariadb
+      - VIRTUAL_HOST=stats.mysite.ext
+      - LETSENCRYPT_HOST=stats.mysite.ext
+      - LETSENCRYPT_EMAIL=email@something.ext
+    env_file:
+      - ./db.env
+    networks:
+      - default
+      - net
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+
+  mariadb:
+    container_name: mariadb
+    image: mariadb:latest
+    command: --max-allowed-packet=64MB
+    environment:
+      - MYSQL_ROOT_PASSWORD=makeitup
+    env_file:
+      - ./db.env
+    networks:
+      - net
+    restart: unless-stopped
+
+networks:
+  default:
+    name: some-nginx
+  net:
+    driver: bridge
